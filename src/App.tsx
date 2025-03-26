@@ -12,6 +12,10 @@ import Profile from "./pages/Profile";
 import Feedback from "./pages/Feedback";
 import RecentSearches from "./pages/RecentSearches";
 import AdminDashboard from "./pages/admin/Dashboard";
+import UsersManagement from "./pages/admin/Users";
+import FeedbackManagement from "./pages/admin/FeedbackManagement";
+import ModelSettingsPage from "./pages/admin/ModelSettings";
+import SystemSettingsPage from "./pages/admin/SystemSettings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -32,6 +36,10 @@ const App = () => (
             
             {/* Admin routes */}
             <Route path="/admin/dashboard" element={<AdminDashboard />} />
+            <Route path="/admin/users" element={<UsersManagement />} />
+            <Route path="/admin/feedback" element={<FeedbackManagement />} />
+            <Route path="/admin/model" element={<ModelSettingsPage />} />
+            <Route path="/admin/settings" element={<SystemSettingsPage />} />
             
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

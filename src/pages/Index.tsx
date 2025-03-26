@@ -115,17 +115,9 @@ const Index: React.FC = () => {
       <ImageUpload
         onImageSelected={handleImageSelected}
         isLoading={isLoading}
+        onIdentify={handleIdentify}
       />
-      {imageData && !isLoading && !result && (
-        <div className="w-full py-6 flex justify-center">
-          <button
-            onClick={handleIdentify}
-            className="rounded-full bg-mushroom-500 hover:bg-mushroom-600 text-white px-8 py-3 font-medium transition-all duration-300 hover:shadow-md"
-          >
-            Identify Mushroom
-          </button>
-        </div>
-      )}
+      {/* Removing the duplicate identify button since we'll now trigger it from ImageUpload */}
       <div id="results-section">
         <Results
           isVisible={showResults}

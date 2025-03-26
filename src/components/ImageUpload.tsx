@@ -8,9 +8,10 @@ import { validateImage, fileToBase64 } from "@/utils/imageUtils";
 interface ImageUploadProps {
   onImageSelected: (imageData: string | ArrayBuffer | null) => void;
   isLoading: boolean;
+  onIdentify: () => void;
 }
 
-const ImageUpload: React.FC<ImageUploadProps> = ({ onImageSelected, isLoading }) => {
+const ImageUpload: React.FC<ImageUploadProps> = ({ onImageSelected, isLoading, onIdentify }) => {
   const [dragActive, setDragActive] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -74,13 +75,6 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ onImageSelected, isLoading })
     onImageSelected(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
-    }
-  };
-
-  const handleIdentify = () => {
-    const identifyButton = document.querySelector('button[id="identify-button"]') as HTMLButtonElement;
-    if (identifyButton) {
-      identifyButton.click();
     }
   };
 
@@ -180,8 +174,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ onImageSelected, isLoading })
           {previewUrl && (
             <div className="mt-8 text-center">
               <Button
-                id="identify-button"
-                onClick={handleIdentify}
+                onClick={onIdentify}
                 disabled={isLoading}
                 className="rounded-full bg-mushroom-500 hover:bg-mushroom-600 text-white px-8 py-6 h-auto subtle-shadow"
               >
