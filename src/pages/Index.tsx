@@ -57,10 +57,10 @@ const Index: React.FC = () => {
       
       // Scroll to results after a short delay
       setTimeout(() => {
-        window.scrollTo({
-          top: document.documentElement.scrollHeight,
-          behavior: "smooth",
-        });
+        const resultsElement = document.getElementById("results-section");
+        if (resultsElement) {
+          resultsElement.scrollIntoView({ behavior: "smooth" });
+        }
       }, 300);
       
     } catch (error) {
@@ -100,11 +100,13 @@ const Index: React.FC = () => {
           </button>
         </div>
       )}
-      <Results
-        isVisible={showResults}
-        result={result}
-        onReset={resetIdentification}
-      />
+      <div id="results-section">
+        <Results
+          isVisible={showResults}
+          result={result}
+          onReset={resetIdentification}
+        />
+      </div>
       <InfoSection />
     </Layout>
   );

@@ -3,6 +3,7 @@ import React, { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Upload, Camera } from "lucide-react";
+import { validateImage, fileToBase64 } from "@/utils/imageUtils";
 
 interface ImageUploadProps {
   onImageSelected: (imageData: string | ArrayBuffer | null) => void;
@@ -44,23 +45,22 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ onImageSelected, isLoading })
   };
 
   const handleFile = (file: File) => {
-    // Check if the file is an image
-    if (!file.type.match("image.*")) {
-      toast.error("Please select an image file");
+    // Validate the image
+    const validation = validateImage(file);
+    if (!validation.valid) {
+      toast.error(validation.error);
       return;
     }
 
-    // Check file size (limit to 10MB)
-    if (file.size > 10 * 1024 * 1024) {
-      toast.error("File size should be less than 10MB");
-      return;
-    }
-
+    // Read and process the file
     const reader = new FileReader();
     reader.onload = (e) => {
       const result = e.target?.result;
       setPreviewUrl(result as string);
       onImageSelected(result);
+      
+      // Show success message
+      toast.success("Image uploaded successfully!");
     };
     reader.readAsDataURL(file);
   };
@@ -77,22 +77,30 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ onImageSelected, isLoading })
     }
   };
 
+  const handleIdentify = () => {
+    const identifyButton = document.querySelector('button[id="identify-button"]') as HTMLButtonElement;
+    if (identifyButton) {
+      identifyButton.click();
+    }
+  };
+
   return (
-    <section id="image-uploader" className="w-full py-12 md:py-24 bg-gradient-to-b from-white to-mushroom-50">
+    <section id="image-uploader" className="w-full py-12 md:py-16 bg-gradient-to-b from-white to-mushroom-50">
       <div className="container px-4 md:px-6 max-w-5xl mx-auto">
-        <div className="text-center space-y-3 mb-10 animate-fade-up">
+        <div className="text-center space-y-3 mb-8 animate-fade-up">
           <h2 className="heading-lg">Upload a Mushroom Photo</h2>
           <p className="body-md text-muted-foreground max-w-2xl mx-auto">
             For the most accurate identification, upload a clear photo of the entire mushroom, including the cap, stem, and base.
           </p>
         </div>
 
-        <div className="mt-8 animate-fade-in">
+        <div className="mt-6 animate-fade-in">
           <div
             className={`
               relative rounded-2xl border-2 border-dashed p-8 transition-all duration-300 
               ${dragActive ? "border-mushroom-400 bg-mushroom-50" : "border-mushroom-200"} 
               ${previewUrl ? "bg-white" : "bg-mushroom-50/50"}
+              ${dragActive ? "scale-102" : "scale-100"}
             `}
             onDragEnter={handleDrag}
             onDragLeave={handleDrag}
@@ -172,6 +180,8 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ onImageSelected, isLoading })
           {previewUrl && (
             <div className="mt-8 text-center">
               <Button
+                id="identify-button"
+                onClick={handleIdentify}
                 disabled={isLoading}
                 className="rounded-full bg-mushroom-500 hover:bg-mushroom-600 text-white px-8 py-6 h-auto subtle-shadow"
               >

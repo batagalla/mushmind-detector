@@ -11,7 +11,7 @@ const Hero: React.FC = () => {
   };
 
   return (
-    <section className="w-full py-12 md:py-24">
+    <section className="w-full py-10 md:py-16 bg-gradient-to-b from-mushroom-50/50 to-white">
       <div className="container px-4 md:px-6">
         <div className="grid gap-6 lg:grid-cols-2 lg:gap-12 items-center">
           <div className="space-y-4 animate-fade-up">
@@ -30,13 +30,7 @@ const Hero: React.FC = () => {
                 onClick={scrollToUploader}
                 className="bg-mushroom-500 hover:bg-mushroom-600 text-white rounded-full px-8 h-12 transition-all duration-300 hover:shadow-md"
               >
-                Identify Now
-              </Button>
-              <Button
-                variant="outline"
-                className="border-mushroom-300 text-mushroom-600 hover:bg-mushroom-100 rounded-full px-8 h-12 transition-all duration-300"
-              >
-                Learn More
+                Upload Photo Now
               </Button>
             </div>
           </div>
