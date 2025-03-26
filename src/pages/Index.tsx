@@ -1,15 +1,21 @@
 
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Layout from "@/components/Layout";
 import Hero from "@/components/Hero";
 import ImageUpload from "@/components/ImageUpload";
 import Results from "@/components/Results";
 import InfoSection from "@/components/InfoSection";
+import FeedbackForm from "@/components/feedback/FeedbackForm";
+import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
 
 // Mock function for mushroom identification
 // This would be replaced with actual API call to your backend
-const identifyMushroom = async (imageData: string): Promise<any> => {
+const identifyMushroom = async (imageData: string, userId?: string): Promise<any> => {
+  // In a real implementation, send the userId with the request if available
+  console.log("Identifying mushroom for user:", userId || "anonymous");
+  
   // Simulating API call
   return new Promise((resolve) => {
     // Simulate processing time
@@ -31,6 +37,8 @@ const identifyMushroom = async (imageData: string): Promise<any> => {
 };
 
 const Index: React.FC = () => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const [imageData, setImageData] = useState<string | ArrayBuffer | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
@@ -51,9 +59,20 @@ const Index: React.FC = () => {
 
     setIsLoading(true);
     try {
-      const identificationResult = await identifyMushroom(imageData as string);
+      const identificationResult = await identifyMushroom(
+        imageData as string, 
+        user?.id // Pass user ID if available
+      );
+      
       setResult(identificationResult);
       setShowResults(true);
+      
+      // If user is logged in, save this search to history
+      // This would be an API call in a real implementation
+      if (user) {
+        console.log("Saving search to user history:", user.id);
+        // Mock implementation - would be an API call to save the search
+      }
       
       // Scroll to results after a short delay
       setTimeout(() => {
@@ -83,6 +102,13 @@ const Index: React.FC = () => {
     }
   };
 
+  const handleFeedbackSubmitted = () => {
+    toast.success("Thank you for your feedback!");
+    
+    // Optional: Navigate to feedback page after submission
+    // navigate('/feedback');
+  };
+
   return (
     <Layout>
       <Hero />
@@ -106,6 +132,15 @@ const Index: React.FC = () => {
           result={result}
           onReset={resetIdentification}
         />
+        
+        {showResults && result && (
+          <div className="max-w-3xl mx-auto px-4 mb-16">
+            <FeedbackForm 
+              mushroomType={result.mushroomType} 
+              onSubmit={handleFeedbackSubmitted}
+            />
+          </div>
+        )}
       </div>
       <InfoSection />
     </Layout>
