@@ -1,5 +1,5 @@
 
-import React, { createContext, useState, useEffect } from "react";
+import React, { createContext, useState, useEffect, useContext } from "react";
 import { authAPI } from "@/services/api";
 import { toast } from "sonner";
 
@@ -90,22 +90,25 @@ export const AuthProvider = ({ children }) => {
     toast.info("You have been logged out");
   };
 
+  const value = {
+    user,
+    loading,
+    isAuthenticated,
+    register,
+    login,
+    logout
+  };
+
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        loading,
-        isAuthenticated,
-        register,
-        login,
-        logout
-      }}
-    >
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );
 };
 
+// Export the hook to use the context
 export const useAuth = () => {
-  return React.useContext(AuthContext);
+  return useContext(AuthContext);
 };
+
+export default AuthProvider;

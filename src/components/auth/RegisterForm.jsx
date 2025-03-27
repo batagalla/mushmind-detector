@@ -12,8 +12,8 @@ const RegisterForm = () => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const { register } = useAuth();
   const navigate = useNavigate();
+  const auth = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -31,9 +31,11 @@ const RegisterForm = () => {
     setIsLoading(true);
     
     try {
-      const success = await register(name, email, password);
-      if (success) {
-        navigate('/');
+      if (auth) {
+        const success = await auth.register(name, email, password);
+        if (success) {
+          navigate('/');
+        }
       }
     } catch (error) {
       console.error("Registration error:", error);

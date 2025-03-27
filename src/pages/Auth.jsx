@@ -9,15 +9,30 @@ import { useAuth } from "@/context/AuthContext";
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
-  const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
+  const auth = useAuth();
   
   // Redirect if already authenticated
   useEffect(() => {
-    if (isAuthenticated) {
+    if (auth && auth.isAuthenticated) {
       navigate('/');
     }
-  }, [isAuthenticated, navigate]);
+  }, [auth, navigate]);
+
+  if (!auth) {
+    // Return a loading state if auth context is not available yet
+    return (
+      <Layout>
+        <div className="w-full px-4 py-8 sm:py-12 md:py-16">
+          <div className="flex flex-col items-center justify-center max-w-md mx-auto">
+            <div className="w-full bg-white shadow-lg rounded-lg overflow-hidden">
+              <p className="text-center p-6">Loading authentication...</p>
+            </div>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout>
