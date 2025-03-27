@@ -1,5 +1,6 @@
 
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,6 +13,7 @@ const RegisterForm = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { register } = useAuth();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -29,11 +31,12 @@ const RegisterForm = () => {
     setIsLoading(true);
     
     try {
-      await register(name, email, password);
-      toast.success("Registration successful!");
+      const success = await register(name, email, password);
+      if (success) {
+        navigate('/');
+      }
     } catch (error) {
       console.error("Registration error:", error);
-      toast.error(error instanceof Error ? error.message : "Registration failed");
     } finally {
       setIsLoading(false);
     }

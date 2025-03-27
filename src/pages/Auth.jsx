@@ -21,14 +21,14 @@ const Auth = () => {
 
   return (
     <Layout>
-      <div className="max-w-5xl mx-auto py-10 px-4">
-        <div className="flex flex-col items-center justify-center">
-          <div className="w-full max-w-md">
-            <div className="mb-6 flex rounded-md overflow-hidden">
+      <div className="w-full px-4 py-8 sm:py-12 md:py-16">
+        <div className="flex flex-col items-center justify-center max-w-md mx-auto">
+          <div className="w-full bg-white shadow-lg rounded-lg overflow-hidden">
+            <div className="flex rounded-t-lg overflow-hidden">
               <Button
                 type="button"
                 variant="ghost"
-                className={`flex-1 py-2 rounded-none ${
+                className={`flex-1 py-3 rounded-none ${
                   isLogin ? "bg-mushroom-500 text-white" : "bg-gray-100"
                 }`}
                 onClick={() => setIsLogin(true)}
@@ -38,7 +38,7 @@ const Auth = () => {
               <Button
                 type="button"
                 variant="ghost"
-                className={`flex-1 py-2 rounded-none ${
+                className={`flex-1 py-3 rounded-none ${
                   !isLogin ? "bg-mushroom-500 text-white" : "bg-gray-100"
                 }`}
                 onClick={() => setIsLogin(false)}
@@ -47,7 +47,9 @@ const Auth = () => {
               </Button>
             </div>
 
-            {isLogin ? <LoginForm /> : <RegisterForm />}
+            <div className="p-4 sm:p-6">
+              {isLogin ? <LoginForm /> : <RegisterForm />}
+            </div>
           </div>
         </div>
       </div>

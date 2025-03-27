@@ -1,5 +1,6 @@
 
 import axios from 'axios';
+import { toast } from 'sonner';
 
 const API_URL = 'http://localhost:5000/api';
 
@@ -21,6 +22,30 @@ api.interceptors.request.use(
     return config;
   },
   (error) => Promise.reject(error)
+);
+
+// Add response interceptor to handle common errors
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    const message = error.response?.data?.message || 'An error occurred';
+    
+    // Handle unauthorized errors (401)
+    if (error.response?.status === 401) {
+      localStorage.removeItem('token');
+      if (window.location.pathname !== '/auth') {
+        toast.error('Session expired. Please log in again.');
+        window.location.href = '/auth';
+      }
+    }
+    
+    // Handle server errors (500)
+    if (error.response?.status === 500) {
+      toast.error('Server error. Please try again later.');
+    }
+    
+    return Promise.reject(error);
+  }
 );
 
 // Auth API calls
