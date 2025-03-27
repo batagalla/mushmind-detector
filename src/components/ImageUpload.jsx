@@ -17,12 +17,13 @@ import {
 } from "@/components/ui/alert-dialog";
 
 const ImageUpload = ({ onImageSelected, isLoading, onIdentify }) => {
-  const { user, isAuthenticated } = useAuth();
+  const auth = useAuth();
   const [imagePreview, setImagePreview] = useState(null);
   const [dragActive, setDragActive] = useState(false);
   const [uploadedImage, setUploadedImage] = useState(null);
   const [showUploadConfirm, setShowUploadConfirm] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
+  const [uploadLoading, setUploadLoading] = useState(false);
 
   const handleFileDrop = (e) => {
     e.preventDefault();
@@ -56,7 +57,7 @@ const ImageUpload = ({ onImageSelected, isLoading, onIdentify }) => {
     }
     
     // If not authenticated, show preview without uploading
-    if (!isAuthenticated) {
+    if (!auth?.isAuthenticated) {
       const reader = new FileReader();
       reader.onload = (e) => {
         setImagePreview(e.target.result);
@@ -72,8 +73,9 @@ const ImageUpload = ({ onImageSelected, isLoading, onIdentify }) => {
   };
 
   const confirmUpload = async () => {
-    if (!selectedFile || !isAuthenticated) return;
+    if (!selectedFile || !auth?.isAuthenticated) return;
 
+    setUploadLoading(true);
     try {
       // Create form data
       const formData = new FormData();
@@ -93,11 +95,14 @@ const ImageUpload = ({ onImageSelected, isLoading, onIdentify }) => {
         setUploadedImage(response.data.image);
         onImageSelected(response.data.image);
         toast.success("Image uploaded successfully!");
+      } else {
+        toast.error("Failed to upload image");
       }
     } catch (error) {
       console.error("Upload failed:", error);
-      toast.error("Failed to upload image. Please try again.");
+      toast.error(error.response?.data?.message || "Failed to upload image. Please try again.");
     } finally {
+      setUploadLoading(false);
       setShowUploadConfirm(false);
       setSelectedFile(null);
     }
@@ -137,15 +142,15 @@ const ImageUpload = ({ onImageSelected, isLoading, onIdentify }) => {
   };
 
   return (
-    <section id="image-uploader" className="w-full py-16 bg-white">
-      <div className="container px-4 md:px-6 max-w-4xl">
+    <section id="image-uploader" className="w-full py-8 sm:py-12 md:py-16 bg-white">
+      <div className="container px-4 max-w-4xl mx-auto">
         <div className="text-center mb-8">
-          <h2 className="heading-lg mb-3">Upload a Mushroom Photo</h2>
-          <p className="body-md text-muted-foreground max-w-lg mx-auto">
+          <h2 className="text-2xl font-bold mb-3 text-mushroom-600">Upload a Mushroom Photo</h2>
+          <p className="text-gray-600 max-w-lg mx-auto">
             Take a clear photo of the mushroom you want to identify. For best results, ensure good lighting and include the cap, stem, and gills if possible.
           </p>
           
-          {!isAuthenticated && (
+          {!auth?.isAuthenticated && (
             <p className="text-amber-600 mt-4 text-sm">
               You're not logged in. You can upload and identify mushrooms, but your results won't be saved.
               <br />
@@ -243,7 +248,9 @@ const ImageUpload = ({ onImageSelected, isLoading, onIdentify }) => {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmUpload}>Upload</AlertDialogAction>
+            <AlertDialogAction onClick={confirmUpload} disabled={uploadLoading}>
+              {uploadLoading ? "Uploading..." : "Upload"}
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

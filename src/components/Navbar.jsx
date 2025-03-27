@@ -29,7 +29,7 @@ import {
 } from "@/components/ui/alert-dialog";
 
 const Navbar = () => {
-  const { user, logout } = useAuth();
+  const auth = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
@@ -39,9 +39,10 @@ const Navbar = () => {
   };
 
   const confirmLogout = () => {
-    logout();
-    navigate('/');
-    toast.info("You have been logged out");
+    if (auth) {
+      auth.logout();
+      navigate('/');
+    }
     setShowLogoutConfirm(false);
   };
 
@@ -49,7 +50,7 @@ const Navbar = () => {
     return location.pathname === path;
   };
 
-  const isAdmin = user && user.role === "admin";
+  const isAdmin = auth?.user?.role === "admin";
 
   return (
     <header className="w-full bg-white border-b border-gray-200 shadow-sm sticky top-0 z-50">
@@ -95,18 +96,18 @@ const Navbar = () => {
 
           {/* User menu */}
           <div className="flex items-center">
-            {user ? (
+            {auth?.user ? (
               <div className="hidden md:flex items-center space-x-4">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" className="relative h-10 w-10 rounded-full bg-mushroom-100 text-mushroom-600 font-bold">
-                      {user.name.charAt(0).toUpperCase()}
+                      {auth.user.name.charAt(0).toUpperCase()}
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-56">
                     <div className="px-4 py-3 border-b border-gray-100">
-                      <p className="text-sm font-medium">{user.name}</p>
-                      <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                      <p className="text-sm font-medium">{auth.user.name}</p>
+                      <p className="text-xs text-gray-500 truncate">{auth.user.email}</p>
                     </div>
                     <DropdownMenuItem onClick={() => navigate("/profile")}>
                       <User className="mr-2 h-4 w-4" />
@@ -161,14 +162,14 @@ const Navbar = () => {
                   <div className="flex flex-col h-full">
                     <div className="space-y-4 py-4">
                       <div className="px-4 pb-4 border-b border-gray-100">
-                        {user ? (
+                        {auth?.user ? (
                           <div className="flex items-center mb-4">
                             <div className="w-10 h-10 rounded-full bg-mushroom-100 flex items-center justify-center text-mushroom-600 font-bold">
-                              {user.name.charAt(0).toUpperCase()}
+                              {auth.user.name.charAt(0).toUpperCase()}
                             </div>
                             <div className="ml-3">
-                              <p className="text-sm font-medium">{user.name}</p>
-                              <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                              <p className="text-sm font-medium">{auth.user.name}</p>
+                              <p className="text-xs text-gray-500 truncate">{auth.user.email}</p>
                             </div>
                           </div>
                         ) : (
@@ -196,7 +197,7 @@ const Navbar = () => {
                         >
                           Feedback
                         </Link>
-                        {user && (
+                        {auth?.user && (
                           <>
                             <Link
                               to="/profile"
@@ -223,7 +224,7 @@ const Navbar = () => {
                       </nav>
                     </div>
                     
-                    {user && (
+                    {auth?.user && (
                       <div className="mt-auto px-4 py-2 border-t">
                         <Button
                           onClick={handleLogout}

@@ -18,24 +18,40 @@ import {
 } from "@/components/ui/alert-dialog";
 
 const Profile = () => {
-  const { user, logout } = useAuth();
+  const auth = useAuth();
   const navigate = useNavigate();
   
-  const [name, setName] = useState(user?.name || "");
-  const [email, setEmail] = useState(user?.email || "");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [isEditing, setIsEditing] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [showSaveConfirm, setShowSaveConfirm] = useState(false);
   
+  // Set initial user data when auth context loads
+  useEffect(() => {
+    if (auth?.user) {
+      setName(auth.user.name || "");
+      setEmail(auth.user.email || "");
+    }
+  }, [auth?.user]);
+  
   // Redirect if not authenticated
   useEffect(() => {
-    if (!user) {
+    if (auth && !auth.loading && !auth.isAuthenticated) {
       navigate('/auth');
     }
-  }, [user, navigate]);
+  }, [auth, navigate]);
 
-  if (!user) {
-    return null; // Don't render if not authenticated
+  if (!auth?.user) {
+    return (
+      <Layout>
+        <div className="max-w-5xl mx-auto py-10 px-4">
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <p className="text-center">Loading profile...</p>
+          </div>
+        </div>
+      </Layout>
+    );
   }
 
   const handleSaveClick = () => {
@@ -54,9 +70,8 @@ const Profile = () => {
   };
   
   const confirmLogout = () => {
-    logout();
+    auth.logout();
     navigate('/');
-    toast.info("You have been logged out");
     setShowLogoutConfirm(false);
   };
 
@@ -78,13 +93,13 @@ const Profile = () => {
           <div className="space-y-6">
             <div className="flex items-center space-x-4">
               <div className="w-20 h-20 rounded-full bg-mushroom-200 flex items-center justify-center text-mushroom-600 text-2xl font-bold">
-                {user.name.charAt(0).toUpperCase()}
+                {auth.user.name.charAt(0).toUpperCase()}
               </div>
               <div>
-                <h2 className="text-xl font-semibold">{user.name}</h2>
-                <p className="text-gray-500">{user.email}</p>
+                <h2 className="text-xl font-semibold">{auth.user.name}</h2>
+                <p className="text-gray-500">{auth.user.email}</p>
                 <p className="text-sm bg-mushroom-100 text-mushroom-700 px-2 py-1 rounded mt-2 inline-block">
-                  {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
+                  {auth.user.role.charAt(0).toUpperCase() + auth.user.role.slice(1)}
                 </p>
               </div>
             </div>
@@ -132,15 +147,15 @@ const Profile = () => {
                 <div className="space-y-3">
                   <div className="grid grid-cols-3 gap-4">
                     <p className="text-gray-500">Name</p>
-                    <p className="col-span-2">{user.name}</p>
+                    <p className="col-span-2">{auth.user.name}</p>
                   </div>
                   <div className="grid grid-cols-3 gap-4">
                     <p className="text-gray-500">Email</p>
-                    <p className="col-span-2">{user.email}</p>
+                    <p className="col-span-2">{auth.user.email}</p>
                   </div>
                   <div className="grid grid-cols-3 gap-4">
                     <p className="text-gray-500">Account Type</p>
-                    <p className="col-span-2 capitalize">{user.role}</p>
+                    <p className="col-span-2 capitalize">{auth.user.role}</p>
                   </div>
                 </div>
               )}

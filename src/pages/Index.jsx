@@ -12,7 +12,7 @@ import { toast } from "sonner";
 import { imageAPI } from "@/services/api";
 
 const Index = () => {
-  const { user, isAuthenticated } = useAuth();
+  const auth = useAuth();
   const navigate = useNavigate();
   const [imageData, setImageData] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -37,7 +37,7 @@ const Index = () => {
       let identificationResult;
       
       // If user is authenticated and we have an uploaded image (not just a preview)
-      if (isAuthenticated && typeof imageData === 'object' && imageData._id) {
+      if (auth?.isAuthenticated && typeof imageData === 'object' && imageData._id) {
         // Use actual API to classify the image
         const response = await imageAPI.classifyImage(imageData._id);
         identificationResult = response.data.result;
@@ -118,7 +118,7 @@ const Index = () => {
           onReset={resetIdentification}
         />
         
-        {showResults && result && isAuthenticated && (
+        {showResults && result && auth?.isAuthenticated && (
           <div className="max-w-3xl mx-auto px-4 mb-16">
             <FeedbackForm 
               mushroomType={result.classificationType} 
