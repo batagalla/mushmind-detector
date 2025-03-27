@@ -9,35 +9,10 @@ import InfoSection from "@/components/InfoSection";
 import FeedbackForm from "@/components/feedback/FeedbackForm";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
-
-// Mock function for mushroom identification
-// This would be replaced with actual API call to your backend
-const identifyMushroom = async (imageData, userId) => {
-  // In a real implementation, send the userId with the request if available
-  console.log("Identifying mushroom for user:", userId || "anonymous");
-  
-  // Simulating API call
-  return new Promise((resolve) => {
-    // Simulate processing time
-    setTimeout(() => {
-      // For demo purposes, randomly decide if mushroom is safe
-      const isSafe = Math.random() > 0.5;
-      
-      // Mock result object
-      resolve({
-        isSafe,
-        mushroomType: isSafe ? "Agaricus bisporus (Button Mushroom)" : "Amanita phalloides (Death Cap)",
-        confidence: 0.85 + Math.random() * 0.1,
-        description: isSafe 
-          ? "The button mushroom is one of the most commonly cultivated mushrooms worldwide. It has a mild flavor and is safe to eat both raw and cooked."
-          : "The death cap is one of the most poisonous mushrooms known. Consumption can lead to severe liver damage and can be fatal. It contains amatoxins that are not destroyed by cooking."
-      });
-    }, 2000);
-  });
-};
+import { imageAPI } from "@/services/api";
 
 const Index = () => {
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const [imageData, setImageData] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -59,20 +34,21 @@ const Index = () => {
 
     setIsLoading(true);
     try {
-      const identificationResult = await identifyMushroom(
-        imageData, 
-        user?.id // Pass user ID if available
-      );
+      let identificationResult;
+      
+      // If user is authenticated and we have an uploaded image (not just a preview)
+      if (isAuthenticated && typeof imageData === 'object' && imageData._id) {
+        // Use actual API to classify the image
+        const response = await imageAPI.classifyImage(imageData._id);
+        identificationResult = response.data.result;
+      } else {
+        // Mock result for unauthenticated users or local preview
+        // This would be replaced with an actual API call in production
+        identificationResult = await mockIdentifyMushroom();
+      }
       
       setResult(identificationResult);
       setShowResults(true);
-      
-      // If user is logged in, save this search to history
-      // This would be an API call in a real implementation
-      if (user) {
-        console.log("Saving search to user history:", user.id);
-        // Mock implementation - would be an API call to save the search
-      }
       
       // Scroll to results after a short delay
       setTimeout(() => {
@@ -90,6 +66,27 @@ const Index = () => {
     }
   };
 
+  // Mock function for mushroom identification when user is not authenticated
+  const mockIdentifyMushroom = () => {
+    return new Promise((resolve) => {
+      // Simulate processing time
+      setTimeout(() => {
+        // For demo purposes, randomly decide if mushroom is safe
+        const isSafe = Math.random() > 0.5;
+        
+        // Mock result object
+        resolve({
+          isSafe,
+          classificationType: isSafe ? "Agaricus bisporus (Button Mushroom)" : "Amanita phalloides (Death Cap)",
+          confidence: 0.85 + Math.random() * 0.1,
+          description: isSafe 
+            ? "The button mushroom is one of the most commonly cultivated mushrooms worldwide. It has a mild flavor and is safe to eat both raw and cooked."
+            : "The death cap is one of the most poisonous mushrooms known. Consumption can lead to severe liver damage and can be fatal. It contains amatoxins that are not destroyed by cooking."
+        });
+      }, 2000);
+    });
+  };
+
   const resetIdentification = () => {
     setImageData(null);
     setResult(null);
@@ -104,9 +101,6 @@ const Index = () => {
 
   const handleFeedbackSubmitted = () => {
     toast.success("Thank you for your feedback!");
-    
-    // Optional: Navigate to feedback page after submission
-    // navigate('/feedback');
   };
 
   return (
@@ -124,10 +118,11 @@ const Index = () => {
           onReset={resetIdentification}
         />
         
-        {showResults && result && (
+        {showResults && result && isAuthenticated && (
           <div className="max-w-3xl mx-auto px-4 mb-16">
             <FeedbackForm 
-              mushroomType={result.mushroomType} 
+              mushroomType={result.classificationType} 
+              imageId={imageData._id}
               onSubmit={handleFeedbackSubmitted}
             />
           </div>

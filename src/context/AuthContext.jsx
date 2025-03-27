@@ -1,117 +1,109 @@
 
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useState, useEffect } from "react";
+import { authAPI } from "@/services/api";
+import { toast } from "sonner";
 
-// Create auth context
-const AuthContext = createContext(null);
-
-// Mock user data
-const mockUsers = [
-  {
-    id: "1",
-    name: "Admin User",
-    email: "admin@example.com",
-    password: "admin123",
-    role: "admin"
-  },
-  {
-    id: "2",
-    name: "Regular User",
-    email: "user@example.com",
-    password: "user123",
-    role: "user"
-  }
-];
+export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  // Initialize state from localStorage if available
-  const [user, setUser] = useState(() => {
-    const savedUser = localStorage.getItem("user");
-    return savedUser ? JSON.parse(savedUser) : null;
-  });
-  const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    return localStorage.getItem("user") !== null;
-  });
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  // Update localStorage when user changes
+  // Check for existing token on initial load
   useEffect(() => {
-    if (user) {
-      localStorage.setItem("user", JSON.stringify(user));
-      setIsAuthenticated(true);
-    } else {
-      localStorage.removeItem("user");
-      setIsAuthenticated(false);
-    }
-  }, [user]);
-
-  // Login function
-  const login = async (email, password) => {
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 800));
-    
-    const foundUser = mockUsers.find(u => 
-      u.email.toLowerCase() === email.toLowerCase() && u.password === password
-    );
-    
-    if (!foundUser) {
-      throw new Error("Invalid email or password");
-    }
-    
-    // Remove password before storing user
-    const { password: _, ...userWithoutPassword } = foundUser;
-    setUser(userWithoutPassword);
-    return userWithoutPassword;
-  };
-
-  // Register function
-  const register = async (name, email, password) => {
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 800));
-    
-    // Check if user already exists
-    if (mockUsers.some(u => u.email.toLowerCase() === email.toLowerCase())) {
-      throw new Error("Email already in use");
-    }
-    
-    // Create new user
-    const newUser = {
-      id: String(mockUsers.length + 1),
-      name,
-      email,
-      password,
-      role: "user"
+    const checkLoggedIn = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (token) {
+          const { data } = await authAPI.getProfile();
+          if (data.success) {
+            setUser(data.user);
+            setIsAuthenticated(true);
+          } else {
+            // Invalid token
+            localStorage.removeItem("token");
+          }
+        }
+      } catch (error) {
+        console.error("Auth check failed:", error);
+        localStorage.removeItem("token");
+      } finally {
+        setLoading(false);
+      }
     };
-    
-    // Add to mock database
-    mockUsers.push(newUser);
-    
-    // Remove password before storing user
-    const { password: _, ...userWithoutPassword } = newUser;
-    setUser(userWithoutPassword);
-    return userWithoutPassword;
+
+    checkLoggedIn();
+  }, []);
+
+  // Register user
+  const register = async (name, email, password) => {
+    setLoading(true);
+    try {
+      const { data } = await authAPI.register({ name, email, password });
+      
+      if (data.success) {
+        localStorage.setItem("token", data.token);
+        setUser(data.user);
+        setIsAuthenticated(true);
+        toast.success("Registration successful!");
+        return true;
+      }
+    } catch (error) {
+      console.error("Registration failed:", error.response?.data?.message || error.message);
+      toast.error(error.response?.data?.message || "Registration failed");
+      return false;
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // Logout function
+  // Login user
+  const login = async (email, password) => {
+    setLoading(true);
+    try {
+      const { data } = await authAPI.login({ email, password });
+      
+      if (data.success) {
+        localStorage.setItem("token", data.token);
+        setUser(data.user);
+        setIsAuthenticated(true);
+        toast.success("Login successful!");
+        return true;
+      }
+    } catch (error) {
+      console.error("Login failed:", error.response?.data?.message || error.message);
+      toast.error(error.response?.data?.message || "Login failed");
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Logout user
   const logout = () => {
+    localStorage.removeItem("token");
     setUser(null);
+    setIsAuthenticated(false);
+    toast.info("You have been logged out");
   };
 
-  // Context value
-  const value = {
-    user,
-    isAuthenticated,
-    login,
-    register,
-    logout
-  };
-
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider
+      value={{
+        user,
+        loading,
+        isAuthenticated,
+        register,
+        login,
+        logout
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
 };
 
-// Custom hook to use auth context
 export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
-  return context;
+  return React.useContext(AuthContext);
 };

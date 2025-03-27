@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
+import { feedbackAPI } from "@/services/api";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -35,21 +36,38 @@ const FeedbackForm = ({ imageId, mushroomType, onSubmit }) => {
       return;
     }
 
+    if (!imageId) {
+      toast.error("No image to provide feedback for");
+      return;
+    }
+
     setShowSubmitConfirm(true);
   };
 
-  const confirmSubmit = () => {
+  const confirmSubmit = async () => {
     setIsSubmitting(true);
     setShowSubmitConfirm(false);
 
-    // Mock submission - would connect to backend in a real app
-    setTimeout(() => {
-      toast.success("Feedback submitted successfully");
-      setMessage("");
-      setRating(5);
+    try {
+      const response = await feedbackAPI.submitFeedback({
+        imageId,
+        text: message,
+        rating
+      });
+      
+      if (response.data.success) {
+        toast.success("Feedback submitted successfully");
+        setMessage("");
+        setRating(5);
+        
+        if (onSubmit) onSubmit();
+      }
+    } catch (error) {
+      console.error("Error submitting feedback:", error);
+      toast.error("Failed to submit feedback. Please try again.");
+    } finally {
       setIsSubmitting(false);
-      if (onSubmit) onSubmit();
-    }, 1000);
+    }
   };
 
   return (

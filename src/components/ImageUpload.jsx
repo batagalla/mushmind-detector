@@ -3,10 +3,26 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Upload, Camera, X } from "lucide-react";
 import { toast } from "sonner";
+import { useAuth } from "@/context/AuthContext";
+import { imageAPI } from "@/services/api";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const ImageUpload = ({ onImageSelected, isLoading, onIdentify }) => {
+  const { user, isAuthenticated } = useAuth();
   const [imagePreview, setImagePreview] = useState(null);
   const [dragActive, setDragActive] = useState(false);
+  const [uploadedImage, setUploadedImage] = useState(null);
+  const [showUploadConfirm, setShowUploadConfirm] = useState(false);
+  const [selectedFile, setSelectedFile] = useState(null);
 
   const handleFileDrop = (e) => {
     e.preventDefault();
@@ -14,11 +30,17 @@ const ImageUpload = ({ onImageSelected, isLoading, onIdentify }) => {
     setDragActive(false);
     
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      handleFileChange(e.dataTransfer.files[0]);
+      handleFileSelect(e.dataTransfer.files[0]);
     }
   };
 
-  const handleFileChange = (file) => {
+  const handleFileChange = (e) => {
+    if (e.target.files && e.target.files[0]) {
+      handleFileSelect(e.target.files[0]);
+    }
+  };
+
+  const handleFileSelect = (file) => {
     if (!file) return;
     
     // Validate file is an image
@@ -33,17 +55,51 @@ const ImageUpload = ({ onImageSelected, isLoading, onIdentify }) => {
       return;
     }
     
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      setImagePreview(e.target.result);
-      onImageSelected(e.target.result);
-    };
-    reader.readAsDataURL(file);
+    // If not authenticated, show preview without uploading
+    if (!isAuthenticated) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setImagePreview(e.target.result);
+        onImageSelected(e.target.result);
+      };
+      reader.readAsDataURL(file);
+      return;
+    }
+    
+    // If authenticated, prepare for upload
+    setSelectedFile(file);
+    setShowUploadConfirm(true);
   };
 
-  const handleFileSelect = (e) => {
-    if (e.target.files && e.target.files[0]) {
-      handleFileChange(e.target.files[0]);
+  const confirmUpload = async () => {
+    if (!selectedFile || !isAuthenticated) return;
+
+    try {
+      // Create form data
+      const formData = new FormData();
+      formData.append('image', selectedFile);
+      
+      // Generate preview for immediate display
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setImagePreview(e.target.result);
+      };
+      reader.readAsDataURL(selectedFile);
+
+      // Upload to server
+      const response = await imageAPI.uploadImage(formData);
+      
+      if (response.data.success) {
+        setUploadedImage(response.data.image);
+        onImageSelected(response.data.image);
+        toast.success("Image uploaded successfully!");
+      }
+    } catch (error) {
+      console.error("Upload failed:", error);
+      toast.error("Failed to upload image. Please try again.");
+    } finally {
+      setShowUploadConfirm(false);
+      setSelectedFile(null);
     }
   };
 
@@ -59,12 +115,13 @@ const ImageUpload = ({ onImageSelected, isLoading, onIdentify }) => {
     fileInput.type = 'file';
     fileInput.accept = 'image/*';
     fileInput.capture = 'environment';
-    fileInput.onchange = (e) => handleFileSelect(e);
+    fileInput.onchange = (e) => handleFileChange(e);
     fileInput.click();
   };
 
   const handleRemoveImage = () => {
     setImagePreview(null);
+    setUploadedImage(null);
     onImageSelected(null);
   };
 
@@ -87,6 +144,16 @@ const ImageUpload = ({ onImageSelected, isLoading, onIdentify }) => {
           <p className="body-md text-muted-foreground max-w-lg mx-auto">
             Take a clear photo of the mushroom you want to identify. For best results, ensure good lighting and include the cap, stem, and gills if possible.
           </p>
+          
+          {!isAuthenticated && (
+            <p className="text-amber-600 mt-4 text-sm">
+              You're not logged in. You can upload and identify mushrooms, but your results won't be saved.
+              <br />
+              <a href="/auth" className="underline font-medium">
+                Log in or register
+              </a> to save your identification history.
+            </p>
+          )}
         </div>
 
         <div 
@@ -134,7 +201,7 @@ const ImageUpload = ({ onImageSelected, isLoading, onIdentify }) => {
                 type="file"
                 className="hidden"
                 accept="image/*"
-                onChange={handleFileSelect}
+                onChange={handleFileChange}
               />
             </div>
           ) : (
@@ -163,6 +230,23 @@ const ImageUpload = ({ onImageSelected, isLoading, onIdentify }) => {
           )}
         </div>
       </div>
+
+      {/* Upload Confirmation Dialog */}
+      <AlertDialog open={showUploadConfirm} onOpenChange={setShowUploadConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Upload Mushroom Image</AlertDialogTitle>
+            <AlertDialogDescription>
+              This image will be uploaded to our servers for identification. 
+              Continue with upload?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmUpload}>Upload</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </section>
   );
 };
