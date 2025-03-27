@@ -23,6 +23,7 @@ const RecentSearches = () => {
   const [searchHistory, setSearchHistory] = useState([]);
   const [selectedSearch, setSelectedSearch] = useState(null);
   const [showReidentifyConfirm, setShowReidentifyConfirm] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   
   useEffect(() => {
     if (!user) {
@@ -43,6 +44,17 @@ const RecentSearches = () => {
     // Navigate to home page to reidentify the mushroom
     navigate('/');
     setShowReidentifyConfirm(false);
+  };
+
+  const handleDeleteClick = (search) => {
+    setSelectedSearch(search);
+    setShowDeleteConfirm(true);
+  };
+
+  const confirmDelete = () => {
+    // Delete the search history item
+    setSearchHistory(searchHistory.filter(item => item.id !== selectedSearch.id));
+    setShowDeleteConfirm(false);
   };
 
   if (!user) {
@@ -112,14 +124,24 @@ const RecentSearches = () => {
                         {new Date(item.createdAt).toLocaleDateString()}
                       </TableCell>
                       <TableCell className="text-right">
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          className="text-mushroom-500"
-                          onClick={() => handleReidentifyClick(item)}
-                        >
-                          Reidentify
-                        </Button>
+                        <div className="flex justify-end space-x-2">
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="text-mushroom-500"
+                            onClick={() => handleReidentifyClick(item)}
+                          >
+                            Reidentify
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="text-red-500"
+                            onClick={() => handleDeleteClick(item)}
+                          >
+                            Delete
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -156,6 +178,24 @@ const RecentSearches = () => {
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={confirmReidentify}>Proceed</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Search History</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this search from your history? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-red-500 hover:bg-red-600">
+              Delete
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
