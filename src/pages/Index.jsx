@@ -43,7 +43,6 @@ const Index = () => {
         identificationResult = response.data.result;
       } else {
         // Mock result for unauthenticated users or local preview
-        // This would be replaced with an actual API call in production
         identificationResult = await mockIdentifyMushroom();
       }
       

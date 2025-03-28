@@ -1,39 +1,99 @@
 
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link as RouterLink } from "react-router-dom";
+import { 
+  Box, 
+  Container, 
+  Typography, 
+  Link, 
+  Grid, 
+  Divider, 
+  useTheme,
+  useMediaQuery 
+} from "@mui/material";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   return (
-    <footer className="bg-white border-t border-gray-200">
-      <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6">
-        <div className="md:flex md:items-center md:justify-between">
-          <div className="flex justify-center md:justify-start">
-            <Link to="/" className="text-mushroom-600 font-bold text-xl">
+    <Box 
+      component="footer" 
+      sx={{ 
+        bgcolor: 'background.paper', 
+        py: 4, 
+        borderTop: '1px solid', 
+        borderColor: 'divider'
+      }}
+    >
+      <Container maxWidth="lg">
+        <Grid container spacing={4}>
+          <Grid item xs={12} sm={4}>
+            <Typography 
+              component={RouterLink} 
+              to="/" 
+              variant="h6" 
+              color="primary" 
+              sx={{ textDecoration: 'none', display: 'block', mb: 1 }}
+            >
               MushroomID
+            </Typography>
+            <Typography variant="body2" color="text.secondary" paragraph>
+              Safe mushroom identification powered by AI. Our mission is to help 
+              foragers identify mushrooms safely and reliably.
+            </Typography>
+          </Grid>
+          <Grid item xs={12} sm={4}>
+            <Typography variant="h6" color="text.primary" gutterBottom>
+              Quick Links
+            </Typography>
+            <Link component={RouterLink} to="/" color="inherit" sx={{ display: 'block', mb: 1 }}>
+              Home
             </Link>
-          </div>
-          
-          <div className="flex justify-center space-x-4 md:space-x-6 mt-4 md:mt-0">
-            <Link to="/feedback" className="text-gray-500 hover:text-mushroom-500 text-sm md:text-base">
+            <Link component={RouterLink} to="/feedback" color="inherit" sx={{ display: 'block', mb: 1 }}>
               Feedback
             </Link>
-            <Link to="#" className="text-gray-500 hover:text-mushroom-500 text-sm md:text-base">
+            <Link component={RouterLink} to="/auth" color="inherit" sx={{ display: 'block', mb: 1 }}>
+              Login / Register
+            </Link>
+          </Grid>
+          <Grid item xs={12} sm={4}>
+            <Typography variant="h6" color="text.primary" gutterBottom>
+              Legal
+            </Typography>
+            <Link component={RouterLink} to="/privacy" color="inherit" sx={{ display: 'block', mb: 1 }}>
               Privacy Policy
             </Link>
-            <Link to="#" className="text-gray-500 hover:text-mushroom-500 text-sm md:text-base">
+            <Link component={RouterLink} to="/terms" color="inherit" sx={{ display: 'block', mb: 1 }}>
               Terms of Service
             </Link>
-          </div>
-        </div>
-        <div className="mt-8 border-t border-gray-200 pt-4">
-          <p className="text-center text-gray-500 text-sm">
+            <Link component={RouterLink} to="/disclaimer" color="inherit" sx={{ display: 'block', mb: 1 }}>
+              Disclaimer
+            </Link>
+          </Grid>
+        </Grid>
+
+        <Divider sx={{ my: 3 }} />
+
+        <Box 
+          sx={{ 
+            display: 'flex', 
+            flexDirection: isMobile ? 'column' : 'row',
+            justifyContent: 'space-between',
+            alignItems: isMobile ? 'center' : 'flex-start',
+            textAlign: isMobile ? 'center' : 'left'
+          }}
+        >
+          <Typography variant="body2" color="text.secondary">
             &copy; {currentYear} MushroomID. All rights reserved.
-          </p>
-        </div>
-      </div>
-    </footer>
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: isMobile ? 1 : 0 }}>
+            Made with 🍄 for mushroom enthusiasts
+          </Typography>
+        </Box>
+      </Container>
+    </Box>
   );
 };
 

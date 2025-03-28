@@ -1,18 +1,18 @@
 
 import axios from 'axios';
-import { toast } from 'sonner';
 
-const API_URL = 'http://localhost:5000/api';
+// Base API URL - change this to your actual API endpoint in production
+const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
-// Create axios instance
+// Create an axios instance
 const api = axios.create({
-  baseURL: API_URL,
+  baseURL: BASE_URL,
   headers: {
-    'Content-Type': 'application/json'
-  }
+    'Content-Type': 'application/json',
+  },
 });
 
-// Add request interceptor to include auth token
+// Add a request interceptor to add auth token
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
@@ -24,64 +24,32 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Add response interceptor to handle common errors
-api.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    const message = error.response?.data?.message || 'An error occurred';
-    
-    // Handle unauthorized errors (401)
-    if (error.response?.status === 401) {
-      localStorage.removeItem('token');
-      if (window.location.pathname !== '/auth') {
-        toast.error('Session expired. Please log in again.');
-        window.location.href = '/auth';
-      }
-    }
-    
-    // Handle server errors (500)
-    if (error.response?.status === 500) {
-      toast.error('Server error. Please try again later.');
-    }
-    
-    return Promise.reject(error);
-  }
-);
-
-// Auth API calls
+// Auth API services
 export const authAPI = {
   register: (userData) => api.post('/users/register', userData),
   login: (credentials) => api.post('/users/login', credentials),
-  getProfile: () => api.get('/users/profile')
+  getProfile: () => api.get('/users/profile'),
 };
 
-// Image API calls
+// Image API services
 export const imageAPI = {
   uploadImage: (formData) => {
     return api.post('/images/upload', formData, {
       headers: {
-        'Content-Type': 'multipart/form-data'
-      }
+        'Content-Type': 'multipart/form-data',
+      },
     });
   },
-  classifyImage: (imageId) => api.post(`/images/${imageId}/classify`),
   getUserImages: () => api.get('/images/user'),
-  getImageById: (imageId) => api.get(`/images/${imageId}`)
+  getImageById: (id) => api.get(`/images/${id}`),
+  classifyImage: (id) => api.post(`/images/${id}/classify`),
 };
 
-// Feedback API calls
+// Feedback API services
 export const feedbackAPI = {
   submitFeedback: (feedbackData) => api.post('/feedback', feedbackData),
   getUserFeedback: () => api.get('/feedback/user'),
-  getImageFeedback: (imageId) => api.get(`/feedback/image/${imageId}`)
-};
-
-// Admin API calls
-export const adminAPI = {
-  getAllUsers: () => api.get('/admin/users'),
-  getAllFeedback: () => api.get('/admin/feedback'),
-  reviewFeedback: (feedbackId) => api.put(`/admin/feedback/${feedbackId}/review`),
-  updateUserRole: (userId, role) => api.put(`/admin/users/${userId}/role`, { role })
+  getImageFeedback: (imageId) => api.get(`/feedback/image/${imageId}`),
 };
 
 export default api;
