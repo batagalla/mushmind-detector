@@ -3,6 +3,7 @@ const express = require('express');
 const dotenv = require('dotenv');
 const cors = require('cors');
 const connectDB = require('./config/db');
+const createDefaultAdmin = require('./config/setupAdmin');
 
 // Load environment variables
 dotenv.config();
@@ -11,7 +12,10 @@ dotenv.config();
 const app = express();
 
 // Connect to MongoDB
-connectDB();
+connectDB().then(() => {
+  // Create default admin after DB connection
+  createDefaultAdmin();
+});
 
 // Middleware
 app.use(cors());

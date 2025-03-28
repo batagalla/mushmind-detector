@@ -3,7 +3,6 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Layout from "@/components/Layout";
 import { useAuth } from "@/context/AuthContext";
-import { mockSearchHistory } from "@/models/search";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import {
@@ -16,11 +15,14 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { imageAPI } from "@/services/api";
+import { toast } from "sonner";
 
 const RecentSearches = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [searchHistory, setSearchHistory] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [selectedSearch, setSelectedSearch] = useState(null);
   const [showReidentifyConfirm, setShowReidentifyConfirm] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -31,8 +33,31 @@ const RecentSearches = () => {
       return;
     }
     
-    // Simulate fetching data from API
-    setSearchHistory(mockSearchHistory.filter(item => item.userId === user.id));
+    const fetchSearchHistory = async () => {
+      try {
+        setIsLoading(true);
+        const response = await imageAPI.getSearchHistory();
+        
+        const formattedSearches = response.data.searches.map(item => ({
+          id: item._id,
+          imageUrl: item.imageId.imageUrl,
+          mushroomType: item.classificationResultId.classificationType,
+          isSafe: item.classificationResultId.isSafe,
+          confidence: item.classificationResultId.confidence,
+          createdAt: item.createdAt,
+          description: item.classificationResultId.description
+        }));
+        
+        setSearchHistory(formattedSearches);
+      } catch (error) {
+        console.error('Error fetching search history:', error);
+        toast.error('Failed to load search history');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchSearchHistory();
   }, [user, navigate]);
 
   const handleReidentifyClick = (search) => {
@@ -52,9 +77,11 @@ const RecentSearches = () => {
   };
 
   const confirmDelete = () => {
-    // Delete the search history item
+    // Delete the search history item - this is a mock implementation
+    // In a real app, this would call an API to delete the item
     setSearchHistory(searchHistory.filter(item => item.id !== selectedSearch.id));
     setShowDeleteConfirm(false);
+    toast.success('Search removed from history');
   };
 
   if (!user) {
@@ -72,7 +99,12 @@ const RecentSearches = () => {
         </div>
         
         <div className="bg-white rounded-lg shadow-md overflow-hidden">
-          {searchHistory.length > 0 ? (
+          {isLoading ? (
+            <div className="py-10 text-center">
+              <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-mushroom-400 border-r-transparent"></div>
+              <p className="mt-2 text-gray-500">Loading your search history...</p>
+            </div>
+          ) : searchHistory.length > 0 ? (
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>

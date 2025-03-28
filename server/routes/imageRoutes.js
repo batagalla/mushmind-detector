@@ -5,6 +5,7 @@ const auth = require('../middleware/auth');
 const { upload } = require('../config/cloudinary');
 const MushroomImage = require('../models/MushroomImage');
 const ClassificationResult = require('../models/ClassificationResult');
+const SearchHistory = require('../models/SearchHistory');
 
 // @route   POST /api/images/upload
 // @desc    Upload a mushroom image
@@ -69,6 +70,15 @@ router.post('/:id/classify', auth.protect, async (req, res) => {
 
     await classificationResult.save();
 
+    // Save to search history
+    const searchHistory = new SearchHistory({
+      userId: req.user.id,
+      imageId: image._id,
+      classificationResultId: classificationResult._id
+    });
+
+    await searchHistory.save();
+
     res.json({
       success: true,
       result: classificationResult
@@ -120,6 +130,33 @@ router.get('/:id', auth.protect, async (req, res) => {
       success: true,
       image,
       classificationResult
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: 'Server Error' });
+  }
+});
+
+// @route   GET /api/images/search-history
+// @desc    Get user's search history
+// @access  Private
+router.get('/search-history', auth.protect, async (req, res) => {
+  try {
+    const searchHistory = await SearchHistory.find({ userId: req.user.id })
+      .populate({
+        path: 'imageId',
+        select: 'imageUrl'
+      })
+      .populate({
+        path: 'classificationResultId',
+        select: 'classificationType isSafe confidence description'
+      })
+      .sort({ createdAt: -1 });
+    
+    res.json({
+      success: true,
+      count: searchHistory.length,
+      searches: searchHistory
     });
   } catch (error) {
     console.error(error);

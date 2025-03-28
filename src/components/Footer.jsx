@@ -19,10 +19,13 @@ const Footer = () => {
             <Link to="/feedback" className="text-gray-500 hover:text-mushroom-500 text-sm md:text-base">
               Feedback
             </Link>
-            <Link to="#" className="text-gray-500 hover:text-mushroom-500 text-sm md:text-base">
+            <Link to="/recent-searches" className="text-gray-500 hover:text-mushroom-500 text-sm md:text-base">
+              Recent Searches
+            </Link>
+            <Link to="/privacy" className="text-gray-500 hover:text-mushroom-500 text-sm md:text-base">
               Privacy Policy
             </Link>
-            <Link to="#" className="text-gray-500 hover:text-mushroom-500 text-sm md:text-base">
+            <Link to="/terms" className="text-gray-500 hover:text-mushroom-500 text-sm md:text-base">
               Terms of Service
             </Link>
           </div>

@@ -66,7 +66,8 @@ export const imageAPI = {
   },
   classifyImage: (imageId) => api.post(`/images/${imageId}/classify`),
   getUserImages: () => api.get('/images/user'),
-  getImageById: (imageId) => api.get(`/images/${imageId}`)
+  getImageById: (imageId) => api.get(`/images/${imageId}`),
+  getSearchHistory: () => api.get('/images/search-history')
 };
 
 // Feedback API calls
