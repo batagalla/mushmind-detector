@@ -1,18 +1,18 @@
 
 import axios from 'axios';
+import { toast } from 'sonner';
 
-// Base API URL - change this to your actual API endpoint in production
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const API_URL = 'http://localhost:5000/api';
 
-// Create an axios instance
+// Create axios instance
 const api = axios.create({
-  baseURL: BASE_URL,
+  baseURL: API_URL,
   headers: {
-    'Content-Type': 'application/json',
-  },
+    'Content-Type': 'application/json'
+  }
 });
 
-// Add a request interceptor to add auth token
+// Add request interceptor to include auth token
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
@@ -24,47 +24,64 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Auth API services
+// Add response interceptor to handle common errors
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    const message = error.response?.data?.message || 'An error occurred';
+    
+    // Handle unauthorized errors (401)
+    if (error.response?.status === 401) {
+      localStorage.removeItem('token');
+      if (window.location.pathname !== '/auth') {
+        toast.error('Session expired. Please log in again.');
+        window.location.href = '/auth';
+      }
+    }
+    
+    // Handle server errors (500)
+    if (error.response?.status === 500) {
+      toast.error('Server error. Please try again later.');
+    }
+    
+    return Promise.reject(error);
+  }
+);
+
+// Auth API calls
 export const authAPI = {
   register: (userData) => api.post('/users/register', userData),
   login: (credentials) => api.post('/users/login', credentials),
-  getProfile: () => api.get('/users/profile'),
-  getUsers: () => api.get('/admin/users'), // Admin endpoint to get all users
+  getProfile: () => api.get('/users/profile')
 };
 
-// Image API services
+// Image API calls
 export const imageAPI = {
   uploadImage: (formData) => {
     return api.post('/images/upload', formData, {
       headers: {
-        'Content-Type': 'multipart/form-data',
-      },
+        'Content-Type': 'multipart/form-data'
+      }
     });
   },
+  classifyImage: (imageId) => api.post(`/images/${imageId}/classify`),
   getUserImages: () => api.get('/images/user'),
-  getImageById: (id) => api.get(`/images/${id}`),
-  classifyImage: (id) => api.post(`/images/${id}/classify`),
-  getRecentSearches: () => api.get('/images/recent'), // Get recent searches
-  deleteImage: (id) => api.delete(`/images/${id}`), // Delete an image
+  getImageById: (imageId) => api.get(`/images/${imageId}`)
 };
 
-// Feedback API services
+// Feedback API calls
 export const feedbackAPI = {
   submitFeedback: (feedbackData) => api.post('/feedback', feedbackData),
   getUserFeedback: () => api.get('/feedback/user'),
-  getImageFeedback: (imageId) => api.get(`/feedback/image/${imageId}`),
-  getAllFeedback: () => api.get('/admin/feedback'), // Admin endpoint to get all feedback
-  updateFeedbackStatus: (id, status) => api.patch(`/admin/feedback/${id}`, { status }),
-  deleteFeedback: (id) => api.delete(`/admin/feedback/${id}`),
+  getImageFeedback: (imageId) => api.get(`/feedback/image/${imageId}`)
 };
 
-// Admin API services
+// Admin API calls
 export const adminAPI = {
-  getDashboardStats: () => api.get('/admin/stats'),
-  updateModelSettings: (settings) => api.post('/admin/settings/model', settings),
-  getModelSettings: () => api.get('/admin/settings/model'),
-  getSystemSettings: () => api.get('/admin/settings/system'),
-  updateSystemSettings: (settings) => api.post('/admin/settings/system', settings),
+  getAllUsers: () => api.get('/admin/users'),
+  getAllFeedback: () => api.get('/admin/feedback'),
+  reviewFeedback: (feedbackId) => api.put(`/admin/feedback/${feedbackId}/review`),
+  updateUserRole: (userId, role) => api.put(`/admin/users/${userId}/role`, { role })
 };
 
 export default api;

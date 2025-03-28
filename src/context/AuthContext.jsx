@@ -1,34 +1,33 @@
 
-import { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useState, useEffect, useContext } from "react";
 import { authAPI } from "@/services/api";
 import { toast } from "sonner";
 
-const AuthContext = createContext();
-
-export const useAuth = () => {
-  return useContext(AuthContext);
-};
+export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  // Check if user is logged in on initial load
+  // Check for existing token on initial load
   useEffect(() => {
     const checkLoggedIn = async () => {
       try {
         const token = localStorage.getItem("token");
         if (token) {
-          const response = await authAPI.getProfile();
-          setUser(response.data.user);
-          setIsAuthenticated(true);
+          const { data } = await authAPI.getProfile();
+          if (data.success) {
+            setUser(data.user);
+            setIsAuthenticated(true);
+          } else {
+            // Invalid token
+            localStorage.removeItem("token");
+          }
         }
       } catch (error) {
-        console.error("Error checking authentication:", error);
+        console.error("Auth check failed:", error);
         localStorage.removeItem("token");
-        setUser(null);
-        setIsAuthenticated(false);
       } finally {
         setLoading(false);
       }
@@ -37,59 +36,79 @@ export const AuthProvider = ({ children }) => {
     checkLoggedIn();
   }, []);
 
-  const login = async (email, password) => {
-    try {
-      setLoading(true);
-      const response = await authAPI.login({ email, password });
-      localStorage.setItem("token", response.data.token);
-      setUser(response.data.user);
-      setIsAuthenticated(true);
-      toast.success("Successfully logged in!");
-      return { success: true };
-    } catch (error) {
-      console.error("Login error:", error);
-      const errorMsg = error.response?.data?.message || "Login failed. Please try again.";
-      toast.error(errorMsg);
-      return { success: false, message: errorMsg };
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  // Register user
   const register = async (name, email, password) => {
+    setLoading(true);
     try {
-      setLoading(true);
-      const response = await authAPI.register({ name, email, password });
-      localStorage.setItem("token", response.data.token);
-      setUser(response.data.user);
-      setIsAuthenticated(true);
-      toast.success("Successfully registered!");
-      return { success: true };
+      const { data } = await authAPI.register({ name, email, password });
+      
+      if (data.success) {
+        localStorage.setItem("token", data.token);
+        setUser(data.user);
+        setIsAuthenticated(true);
+        toast.success("Registration successful!");
+        return true;
+      }
+      return false;
     } catch (error) {
-      console.error("Registration error:", error);
-      const errorMsg = error.response?.data?.message || "Registration failed. Please try again.";
-      toast.error(errorMsg);
-      return { success: false, message: errorMsg };
+      console.error("Registration failed:", error.response?.data?.message || error.message);
+      toast.error(error.response?.data?.message || "Registration failed");
+      return false;
     } finally {
       setLoading(false);
     }
   };
 
+  // Login user
+  const login = async (email, password) => {
+    setLoading(true);
+    try {
+      const { data } = await authAPI.login({ email, password });
+      
+      if (data.success) {
+        localStorage.setItem("token", data.token);
+        setUser(data.user);
+        setIsAuthenticated(true);
+        toast.success("Login successful!");
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error("Login failed:", error.response?.data?.message || error.message);
+      toast.error(error.response?.data?.message || "Login failed");
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Logout user
   const logout = () => {
     localStorage.removeItem("token");
     setUser(null);
     setIsAuthenticated(false);
-    toast.success("Successfully logged out");
+    toast.info("You have been logged out");
   };
 
   const value = {
     user,
-    isAuthenticated,
     loading,
-    login,
+    isAuthenticated,
     register,
-    logout,
+    login,
+    logout
   };
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+    </AuthContext.Provider>
+  );
 };
+
+// Export the hook to use the context
+export const useAuth = () => {
+  return useContext(AuthContext);
+};
+
+export default AuthProvider;

@@ -1,11 +1,10 @@
 
-import { ThemeProvider } from '@mui/material/styles';
-import CssBaseline from '@mui/material/CssBaseline';
+import { Toaster } from "@/components/ui/toaster";
+import { Toaster as Sonner } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
-import { Toaster as Sonner } from "sonner";
-import theme from './theme/mui-theme';
 
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
@@ -25,8 +24,8 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <BrowserRouter>
       <AuthProvider>
-        <ThemeProvider theme={theme}>
-          <CssBaseline />
+        <TooltipProvider>
+          <Toaster />
           <Sonner position="top-center" />
           <Routes>
             <Route path="/" element={<Index />} />
@@ -42,10 +41,10 @@ const App = () => (
             <Route path="/admin/model" element={<ModelSettingsPage />} />
             <Route path="/admin/settings" element={<SystemSettingsPage />} />
             
-            {/* Catch-all route */}
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
-        </ThemeProvider>
+        </TooltipProvider>
       </AuthProvider>
     </BrowserRouter>
   </QueryClientProvider>

@@ -1,99 +1,39 @@
 
 import React from "react";
 import { Link } from "react-router-dom";
-import { 
-  Box, 
-  Container, 
-  Typography, 
-  Grid, 
-  Divider,
-  useMediaQuery,
-  useTheme
-} from '@mui/material';
 
 const Footer = () => {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const currentYear = new Date().getFullYear();
 
   return (
-    <Box 
-      component="footer" 
-      sx={{ 
-        bgcolor: 'background.paper', 
-        py: 4, 
-        borderTop: '1px solid', 
-        borderColor: 'divider',
-        mt: 'auto'
-      }}
-    >
-      <Container maxWidth="lg">
-        <Grid container spacing={4}>
-          <Grid item xs={12} sm={4}>
-            <Typography 
-              component={Link} 
-              to="/" 
-              variant="h6" 
-              color="primary" 
-              sx={{ textDecoration: 'none', display: 'block', mb: 1 }}
-            >
+    <footer className="bg-white border-t border-gray-200">
+      <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6">
+        <div className="md:flex md:items-center md:justify-between">
+          <div className="flex justify-center md:justify-start">
+            <Link to="/" className="text-mushroom-600 font-bold text-xl">
               MushroomID
-            </Typography>
-            <Typography variant="body2" color="text.secondary" paragraph>
-              Safe mushroom identification powered by AI. Our mission is to help 
-              foragers identify mushrooms safely and reliably.
-            </Typography>
-          </Grid>
-          <Grid item xs={12} sm={4}>
-            <Typography variant="h6" color="text.primary" gutterBottom>
-              Quick Links
-            </Typography>
-            <Typography component={Link} to="/" color="text.secondary" sx={{ display: 'block', mb: 1, textDecoration: 'none' }}>
-              Home
-            </Typography>
-            <Typography component={Link} to="/feedback" color="text.secondary" sx={{ display: 'block', mb: 1, textDecoration: 'none' }}>
+            </Link>
+          </div>
+          
+          <div className="flex justify-center space-x-4 md:space-x-6 mt-4 md:mt-0">
+            <Link to="/feedback" className="text-gray-500 hover:text-mushroom-500 text-sm md:text-base">
               Feedback
-            </Typography>
-            <Typography component={Link} to="/auth" color="text.secondary" sx={{ display: 'block', mb: 1, textDecoration: 'none' }}>
-              Login / Register
-            </Typography>
-          </Grid>
-          <Grid item xs={12} sm={4}>
-            <Typography variant="h6" color="text.primary" gutterBottom>
-              Legal
-            </Typography>
-            <Typography component={Link} to="/privacy" color="text.secondary" sx={{ display: 'block', mb: 1, textDecoration: 'none' }}>
+            </Link>
+            <Link to="#" className="text-gray-500 hover:text-mushroom-500 text-sm md:text-base">
               Privacy Policy
-            </Typography>
-            <Typography component={Link} to="/terms" color="text.secondary" sx={{ display: 'block', mb: 1, textDecoration: 'none' }}>
+            </Link>
+            <Link to="#" className="text-gray-500 hover:text-mushroom-500 text-sm md:text-base">
               Terms of Service
-            </Typography>
-            <Typography component={Link} to="/disclaimer" color="text.secondary" sx={{ display: 'block', mb: 1, textDecoration: 'none' }}>
-              Disclaimer
-            </Typography>
-          </Grid>
-        </Grid>
-
-        <Divider sx={{ my: 3 }} />
-
-        <Box 
-          sx={{ 
-            display: 'flex', 
-            flexDirection: isMobile ? 'column' : 'row',
-            justifyContent: 'space-between',
-            alignItems: isMobile ? 'center' : 'flex-start',
-            textAlign: isMobile ? 'center' : 'left'
-          }}
-        >
-          <Typography variant="body2" color="text.secondary">
+            </Link>
+          </div>
+        </div>
+        <div className="mt-8 border-t border-gray-200 pt-4">
+          <p className="text-center text-gray-500 text-sm">
             &copy; {currentYear} MushroomID. All rights reserved.
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mt: isMobile ? 1 : 0 }}>
-            Made with 🍄 for mushroom enthusiasts
-          </Typography>
-        </Box>
-      </Container>
-    </Box>
+          </p>
+        </div>
+      </div>
+    </footer>
   );
 };
 
