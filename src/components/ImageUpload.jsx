@@ -7,7 +7,9 @@ import {
   Paper, 
   CircularProgress,
   Container,
-  styled
+  styled,
+  useTheme,
+  alpha
 } from "@mui/material";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -28,16 +30,6 @@ const VisuallyHiddenInput = styled('input')({
   width: 1,
 });
 
-const ImageContainer = styled('div')(({ theme }) => ({
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'center',
-  gap: theme.spacing(2),
-  width: '100%',
-  maxWidth: 600,
-  margin: '0 auto',
-}));
-
 const PreviewImage = styled('img')({
   maxWidth: '100%',
   maxHeight: '300px',
@@ -49,6 +41,7 @@ const ImageUpload = ({ onImageSelected, isLoading, onIdentify }) => {
   const [previewUrl, setPreviewUrl] = useState(null);
   const [uploading, setUploading] = useState(false);
   const { isAuthenticated } = useAuth() || {};
+  const theme = useTheme();
   
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
@@ -58,6 +51,12 @@ const ImageUpload = ({ onImageSelected, isLoading, onIdentify }) => {
     // Validate file type
     if (!file.type.startsWith("image/")) {
       toast.error("Please upload an image file");
+      return;
+    }
+    
+    // Validate file size (max 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error("File size should be less than 10MB");
       return;
     }
     
@@ -82,13 +81,13 @@ const ImageUpload = ({ onImageSelected, isLoading, onIdentify }) => {
         console.error("Error uploading image:", error);
         toast.error("Failed to upload image");
         // Still allow preview for identification
-        onImageSelected(objectUrl);
+        onImageSelected(file);
       } finally {
         setUploading(false);
       }
     } else {
       // If not authenticated, just use the local preview
-      onImageSelected(objectUrl);
+      onImageSelected(file);
     }
   };
 
@@ -102,7 +101,14 @@ const ImageUpload = ({ onImageSelected, isLoading, onIdentify }) => {
 
   return (
     <Container maxWidth="lg" id="image-uploader" sx={{ py: 6 }}>
-      <Paper elevation={3} sx={{ p: 4, borderRadius: 2 }}>
+      <Paper 
+        elevation={3} 
+        sx={{ 
+          p: 4, 
+          borderRadius: 2,
+          backgroundColor: theme.palette.background.paper
+        }}
+      >
         <Typography variant="h4" align="center" gutterBottom>
           Upload a Mushroom Photo
         </Typography>
@@ -116,10 +122,26 @@ const ImageUpload = ({ onImageSelected, isLoading, onIdentify }) => {
         </Typography>
 
         <Box sx={{ mt: 4 }}>
-          <ImageContainer>
+          <Box sx={{ 
+            display: 'flex', 
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 2,
+            width: '100%',
+            maxWidth: 600,
+            margin: '0 auto',
+          }}>
             {previewUrl ? (
               <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', gap: 2 }}>
-                <PreviewImage src={previewUrl} alt="Mushroom preview" />
+                <Box sx={{ 
+                  width: '100%', 
+                  maxHeight: 500,
+                  overflow: 'hidden',
+                  borderRadius: 2,
+                  boxShadow: 2
+                }}>
+                  <PreviewImage src={previewUrl} alt="Mushroom preview" />
+                </Box>
                 <Box sx={{ display: 'flex', gap: 2, width: '100%', justifyContent: 'center' }}>
                   <Button
                     variant="outlined"
@@ -147,13 +169,18 @@ const ImageUpload = ({ onImageSelected, isLoading, onIdentify }) => {
             ) : (
               <Box 
                 sx={{ 
-                  border: '2px dashed #ccc', 
+                  border: '2px dashed',
+                  borderColor: alpha(theme.palette.primary.main, 0.3),
                   borderRadius: 2, 
                   p: 4, 
                   textAlign: 'center',
                   width: '100%',
                   cursor: 'pointer',
-                  '&:hover': { borderColor: 'primary.main' }
+                  '&:hover': { 
+                    borderColor: 'primary.main',
+                    bgcolor: alpha(theme.palette.primary.main, 0.04)
+                  },
+                  transition: 'all 0.2s'
                 }}
               >
                 <Button
@@ -172,11 +199,11 @@ const ImageUpload = ({ onImageSelected, isLoading, onIdentify }) => {
                   />
                 </Button>
                 <Typography variant="body2" color="textSecondary">
-                  Supported formats: JPEG, PNG, WebP
+                  Supported formats: JPEG, PNG, WebP (max 10MB)
                 </Typography>
               </Box>
             )}
-          </ImageContainer>
+          </Box>
         </Box>
       </Paper>
     </Container>

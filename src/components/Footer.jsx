@@ -1,21 +1,20 @@
 
 import React from "react";
-import { Link as RouterLink } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { 
   Box, 
   Container, 
   Typography, 
-  Link, 
   Grid, 
-  Divider, 
-  useTheme,
-  useMediaQuery 
-} from "@mui/material";
+  Divider,
+  useMediaQuery,
+  useTheme
+} from '@mui/material';
 
 const Footer = () => {
-  const currentYear = new Date().getFullYear();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const currentYear = new Date().getFullYear();
 
   return (
     <Box 
@@ -24,14 +23,15 @@ const Footer = () => {
         bgcolor: 'background.paper', 
         py: 4, 
         borderTop: '1px solid', 
-        borderColor: 'divider'
+        borderColor: 'divider',
+        mt: 'auto'
       }}
     >
       <Container maxWidth="lg">
         <Grid container spacing={4}>
           <Grid item xs={12} sm={4}>
             <Typography 
-              component={RouterLink} 
+              component={Link} 
               to="/" 
               variant="h6" 
               color="primary" 
@@ -48,29 +48,29 @@ const Footer = () => {
             <Typography variant="h6" color="text.primary" gutterBottom>
               Quick Links
             </Typography>
-            <Link component={RouterLink} to="/" color="inherit" sx={{ display: 'block', mb: 1 }}>
+            <Typography component={Link} to="/" color="text.secondary" sx={{ display: 'block', mb: 1, textDecoration: 'none' }}>
               Home
-            </Link>
-            <Link component={RouterLink} to="/feedback" color="inherit" sx={{ display: 'block', mb: 1 }}>
+            </Typography>
+            <Typography component={Link} to="/feedback" color="text.secondary" sx={{ display: 'block', mb: 1, textDecoration: 'none' }}>
               Feedback
-            </Link>
-            <Link component={RouterLink} to="/auth" color="inherit" sx={{ display: 'block', mb: 1 }}>
+            </Typography>
+            <Typography component={Link} to="/auth" color="text.secondary" sx={{ display: 'block', mb: 1, textDecoration: 'none' }}>
               Login / Register
-            </Link>
+            </Typography>
           </Grid>
           <Grid item xs={12} sm={4}>
             <Typography variant="h6" color="text.primary" gutterBottom>
               Legal
             </Typography>
-            <Link component={RouterLink} to="/privacy" color="inherit" sx={{ display: 'block', mb: 1 }}>
+            <Typography component={Link} to="/privacy" color="text.secondary" sx={{ display: 'block', mb: 1, textDecoration: 'none' }}>
               Privacy Policy
-            </Link>
-            <Link component={RouterLink} to="/terms" color="inherit" sx={{ display: 'block', mb: 1 }}>
+            </Typography>
+            <Typography component={Link} to="/terms" color="text.secondary" sx={{ display: 'block', mb: 1, textDecoration: 'none' }}>
               Terms of Service
-            </Link>
-            <Link component={RouterLink} to="/disclaimer" color="inherit" sx={{ display: 'block', mb: 1 }}>
+            </Typography>
+            <Typography component={Link} to="/disclaimer" color="text.secondary" sx={{ display: 'block', mb: 1, textDecoration: 'none' }}>
               Disclaimer
-            </Link>
+            </Typography>
           </Grid>
         </Grid>
 
